@@ -1,0 +1,68 @@
+#ifndef STATS_H
+#define STATS_H
+
+#include <stdlib.h>
+
+#include "sample.h"
+
+typedef enum
+{
+  STAT_PID = 1,
+  STAT_COMM = 2,
+  STAT_STATE = 3,
+  STAT_PPID = 4,
+  STAT_PGRP = 5,
+  STAT_SESSION = 6,
+  STAT_TTYNR = 7,
+  STAT_TPGID = 8,
+  STAT_FLAGS = 9,
+  STAT_MINFLT = 10,
+  STAT_CMINFLT = 11,
+  STAT_MAJFLT = 12,
+  STAT_CMAJFLT = 13,
+  STAT_UTIME = 14,
+  STAT_STIME = 15,
+  STAT_CUTIME = 16,
+  STAT_CSTIME = 17,
+  STAT_PRIORITY = 18,
+  STAT_NICE = 19,
+  STAT_NUMTHREADS = 20,
+  STAT_ITREALVALUE = 21,
+  STAT_STARTTIME = 22,
+  STAT_VSIZE = 23,
+  STAT_RSS = 24,
+  STAT_RSSLIM = 25,
+  STAT_STARTCODE = 26,
+  STAT_ENDCODE = 27,
+  STAT_STARTSTACK = 28,
+  STAT_KSTKESP = 29,
+  STAT_KSTKEIP = 30,
+  STAT_SIGNAL = 31,
+  STAT_BLOCKED = 32,
+  STAT_SIGIGNORE = 33,
+  STAT_SIGCATCH = 34,
+  STAT_WCHAN = 35,
+  STAT_NSWAP = 36,
+  STAT_CNSWAP = 37,
+  STAT_EXITSIGNAL = 38,
+  STAT_PROCESSOR = 39,
+  STAT_RTPRIORITY = 40,
+  STAT_POLICY = 41,
+  STAT_DELAYACCTBLKIOTICKS = 42,
+  STAT_GUESTTIME = 43,
+  STAT_CGUESTTIME = 44,
+  STAT_STARTDATA = 45,
+  STAT_ENDDATA = 46,
+  STAT_STARTBRK = 47,
+  STAT_ARGSTART = 48,
+  STAT_ARGEND = 49,
+  STAT_ENVSTART = 50,
+  STAT_ENVEND = 51,
+  STAT_EXITCODE = 52
+} StateFields;
+
+void parse_stats(MemoryStats *mem_stats, CPUStats *cpu_stats, char *buffer);
+char *next_stat_field(char **cursor);
+char *get_state(char c);
+
+#endif
