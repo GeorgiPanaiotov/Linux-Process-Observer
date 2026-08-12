@@ -28,12 +28,13 @@ void start_run(const char *program_name, char **c_argv)
     float elapsed = (curr.tv_sec - prev.tv_sec) + (curr.tv_nsec - prev.tv_nsec) / 1e9;
 
     float cpu_percent = get_cpu_percent(elapsed, &monitor.cpu.user_time, &monitor.cpu.system_time, config.hz);
-    printf("%-50s %.3f %%\n", "CPU", (cpu_percent / (float)config.n_processors));
+    printf("%-50s %.3f %%\n", "CPU: ", (cpu_percent / (float)config.n_processors));
     format_bytes(rss_buf, sizeof(rss_buf), (monitor.memory.rss.current * config.page_size));
     printf("%-50s %s\n", "RSS: ", rss_buf);
 
     print_stats(&monitor);
     print_io(&monitor);
+    print_status_signals(&monitor);
     prev = curr;
     sleep(1);
   }
@@ -65,6 +66,22 @@ void print_io(Monitor *monitor)
   printf("%-50s %'lld\n", "Number of Bytes really fetched from Storage: ", monitor->io.read_bytes.current);
   printf("%-50s %'lld\n", "Number of Bytes really sent to Storage: ", monitor->io.write_bytes.current);
   printf("%-50s %'lld\n", "Cancelled Write Bytes: ", monitor->io.canceled_write_bytes.current);
+  printf("\n");
+}
+
+void print_status(Monitor *monitor)
+{
+  print_status_signals(monitor);
+}
+
+void print_status_signals(Monitor *monitor)
+{
+  printf("\n");
+  print_hex_signals("Signals Pending Thread: ", monitor->signals.pending_thread);
+  print_hex_signals("Signals Pending Process: ", monitor->signals.pending_process);
+  print_hex_signals("Signals Blocked: ", monitor->signals.blocked);
+  print_hex_signals("Signals Ignored: ", monitor->signals.ignored);
+  print_hex_signals("Signals Caught: ", monitor->signals.caught);
   printf("\n");
 }
 

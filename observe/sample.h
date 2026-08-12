@@ -2,6 +2,7 @@
 #define SAMPLE_H
 
 #include <stdlib.h>
+#include <stdint.h>
 
 typedef struct Sample
 {
@@ -27,6 +28,17 @@ typedef struct CPUStats
   long n_threads;
 } CPUStats;
 
+typedef struct SignalStats
+{
+  long queued;
+  long limit;
+  uint64_t pending_thread;
+  uint64_t pending_process;
+  uint64_t blocked;
+  uint64_t ignored;
+  uint64_t caught;
+} SignalStats;
+
 typedef struct MemoryStats
 {
   Sample rss;
@@ -45,6 +57,7 @@ typedef struct IOStats
   SampleLL canceled_write_bytes;
   SampleLL rchar;
   SampleLL wchar;
+  long long fd_size;
 } IOStats;
 
 Sample sample_create();
@@ -52,6 +65,7 @@ SampleLL samplell_create();
 MemoryStats memory_stats_create();
 CPUStats cpu_stats_create();
 IOStats io_stats_create();
+SignalStats signal_stats_create();
 void sample_update(Sample *sample, long value);
 void samplell_update(SampleLL *sample, long long value);
 

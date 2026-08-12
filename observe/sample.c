@@ -46,6 +46,13 @@ CPUStats cpu_stats_create()
   return cs;
 }
 
+SignalStats signal_stats_create()
+{
+  SignalStats ss;
+  ss.blocked = 0;
+  return ss;
+}
+
 IOStats io_stats_create()
 {
   IOStats is;
@@ -57,6 +64,7 @@ IOStats io_stats_create()
   is.syscw = new_sample;
   is.wchar = new_sample;
   is.write_bytes = new_sample;
+  is.fd_size = 0;
 
   return is;
 }

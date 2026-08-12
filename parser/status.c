@@ -1,0 +1,167 @@
+#include "status.h"
+
+void format_signal_list(char *buf, size_t buf_size, uint64_t mask)
+{
+  if (mask == 0)
+  {
+    snprintf(buf, buf_size, "0");
+    return;
+  }
+
+  size_t pos = 0;
+  int count = 0;
+
+  for (int signo = 1; signo <= 64; signo++)
+  {
+    if (mask & (1ULL << (signo - 1)))
+    {
+      const char *name = strsignal(signo);
+
+      int written = snprintf(buf + pos, buf_size - pos, "%s%s", (count > 0) ? ", " : "", name ? name : "Unknown");
+
+      if (written < 0 || (size_t)written >= buf_size - pos)
+      {
+        break;
+      }
+
+      pos += written;
+      count++;
+    }
+  }
+}
+
+void print_hex_signals(const char *field_name, uint64_t mask)
+{
+  char sig_buf[512];
+  format_signal_list(sig_buf, sizeof(sig_buf), mask);
+
+  printf("%-50s %s\n", field_name, sig_buf);
+}
+
+bool match_key(char **cursor, const char *key)
+{
+  char *c = *cursor;
+
+  while (*key)
+  {
+    if (*c != *key)
+      return false;
+    c++;
+    key++;
+  }
+
+  if (*c != ':')
+    return false;
+  c++;
+
+  while (*c == ' ' || *c == '\t')
+  {
+    c++;
+  }
+
+  *cursor = c;
+  return true;
+}
+
+void skip_to_next_line(char **cursor)
+{
+  while (**cursor != '\0' && **cursor != '\n')
+  {
+    (*cursor)++;
+  }
+  if (**cursor == '\n')
+  {
+    (*cursor)++;
+  }
+}
+
+char *next_status_value(char **cursor)
+{
+  if (**cursor == '\0')
+  {
+    return NULL;
+  }
+
+  char *start = *cursor;
+
+  while (**cursor != '\0' && **cursor != '\r' && **cursor != '\n' && **cursor != ' ' && **cursor != '\t')
+  {
+    (*cursor)++;
+  }
+
+  if (**cursor != '\0')
+  {
+    **cursor = '\0';
+    (*cursor)++;
+  }
+
+  return start;
+}
+
+void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats, SignalStats *sig_stats, char *buffer)
+{
+  char *cursor = buffer;
+
+  while (*cursor != '\0')
+  {
+    if (match_key(&cursor, "SigBlk"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        uint64_t sigblk = 0;
+        sscanf(token, "%" SCNx64, &sigblk);
+        sig_stats->blocked = sigblk;
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "SigPnd"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        uint64_t sigpndt = 0;
+        sscanf(token, "%" SCNx64, &sigpndt);
+        sig_stats->pending_thread = sigpndt;
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "ShdPnd"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        uint64_t sigpndt = 0;
+        sscanf(token, "%" SCNx64, &sigpndt);
+        sig_stats->pending_thread = sigpndt;
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "SigIgn"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        uint64_t sigign = 0;
+        sscanf(token, "%" SCNx64, &sigign);
+        sig_stats->ignored = sigign;
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "SigCgt"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        uint64_t sigcgt = 0;
+        sscanf(token, "%" SCNx64, &sigcgt);
+        sig_stats->ignored = sigcgt;
+      }
+      skip_to_next_line(&cursor);
+    }
+    else
+    {
+      skip_to_next_line(&cursor);
+    }
+  }
+}

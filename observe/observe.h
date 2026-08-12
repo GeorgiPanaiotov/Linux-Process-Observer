@@ -4,6 +4,7 @@
 #include "enumerate.h"
 #include "stats.h"
 #include "io.h"
+#include "status.h"
 
 #define BUFFER_CAPACITY 8192
 
@@ -21,6 +22,7 @@ typedef struct Monitor {
   CPUStats cpu;
   MemoryStats memory;
   IOStats io;
+  SignalStats signals;
 
   ProcHandles proc_files;
 

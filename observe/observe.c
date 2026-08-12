@@ -7,6 +7,7 @@ Monitor monitor_create(const char *p_name, char **argv)
   monitor.memory = memory_stats_create();
   monitor.cpu = cpu_stats_create();
   monitor.io = io_stats_create();
+  monitor.signals = signal_stats_create();
   monitor.stat_buffer = buffer_create();
   monitor.status_buffer = buffer_create();
   monitor.io_buffer = buffer_create();
@@ -38,6 +39,7 @@ void monitor_cleanup(Monitor *monitor)
   monitor->proc_files = (ProcHandles){};
   monitor->process = (Process){};
   monitor->io = (IOStats){};
+  monitor->signals = (SignalStats){};
 
   buffer_cleanup(&monitor->stat_buffer);
   buffer_cleanup(&monitor->status_buffer);
@@ -94,6 +96,8 @@ void monitor_loop(Monitor *monitor)
   parse_stats(&monitor->memory, &monitor->cpu, monitor->stat_buffer.data);
 
   load_and_read_process_data(monitor, &monitor->status_buffer, monitor->proc_files.status_fd);
+  parse_status(&monitor->memory, &monitor->cpu, &monitor->io, &monitor->signals, monitor->status_buffer.data);
+
   load_and_read_process_data(monitor, &monitor->io_buffer, monitor->proc_files.io_fd);
   parse_io(&monitor->io, monitor->io_buffer.data);
 
