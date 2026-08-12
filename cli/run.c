@@ -8,6 +8,10 @@ void start_run(const char *program_name, char **c_argv)
   Config config = config_create();
 
   char rss_buf[32];
+  char peak_buf[32];
+  char swap_buf[32];
+  char shared_buf[32];
+  char vsize_buf[32];
 
   struct timespec prev;
   struct timespec curr;
@@ -26,21 +30,35 @@ void start_run(const char *program_name, char **c_argv)
 
     clock_gettime(CLOCK_MONOTONIC, &curr);
     float elapsed = (curr.tv_sec - prev.tv_sec) + (curr.tv_nsec - prev.tv_nsec) / 1e9;
-
     float cpu_percent = get_cpu_percent(elapsed, &monitor.cpu.user_time, &monitor.cpu.system_time, config.hz);
     printf("%-50s %.3f %%\n", "CPU: ", (cpu_percent / (float)config.n_processors));
-    format_bytes(rss_buf, sizeof(rss_buf), (monitor.memory.rss.current * config.page_size));
-    printf("%-50s %s\n", "RSS: ", rss_buf);
+
+    print_memory(&monitor, &config, rss_buf, peak_buf, swap_buf, shared_buf, vsize_buf, sizeof(rss_buf), sizeof(peak_buf), sizeof(swap_buf), sizeof(shared_buf), sizeof(vsize_buf));
 
     print_stats(&monitor);
     print_io(&monitor);
-    print_status_signals(&monitor);
+    print_status(&monitor);
+
     prev = curr;
     sleep(1);
   }
 
   monitor_wait_process(&monitor.process);
   monitor_cleanup(&monitor);
+}
+
+void print_memory(Monitor *monitor, Config *config, char *rss_buf, char *peak_buf, char *swap_buf, char *shared_buf, char *vsize_buf, size_t rss_size, size_t peak_size, size_t swap_size, size_t shared_size, size_t vsize_size)
+{
+  format_bytes(rss_buf, rss_size, (monitor->memory.rss.current * config->page_size));
+  printf("%-50s %s\n", "RSS: ", rss_buf);
+  format_bytes(peak_buf, peak_size, (monitor->memory.peak.current * 1024));
+  printf("%-50s %s\n", "VM Peak: ", peak_buf);
+  format_bytes(swap_buf, swap_size, (monitor->memory.swap.current * 1024));
+  printf("%-50s %s\n", "VM Swap: ", swap_buf);
+  format_bytes(shared_buf, shared_size, (monitor->memory.shared.current * 1024));
+  printf("%-50s %s\n", "VM Shared: ", shared_buf);
+  format_bytes(vsize_buf, vsize_size, (monitor->memory.vsize.current * 1024));
+  printf("%-50s %s\n", "VM Size: ", vsize_buf);
 }
 
 void print_stats(Monitor *monitor)
@@ -58,7 +76,6 @@ void print_stats(Monitor *monitor)
 
 void print_io(Monitor *monitor)
 {
-  printf("\n");
   printf("%-50s %'lld\n", "Successfull Bytes from Read: ", monitor->io.rchar.current);
   printf("%-50s %'lld\n", "Successfull Bytes from Write: ", monitor->io.wchar.current);
   printf("%-50s %'lld\n", "Number of 'File Read' Syscalls: ", monitor->io.syscr.current);
@@ -76,7 +93,7 @@ void print_status(Monitor *monitor)
 
 void print_status_signals(Monitor *monitor)
 {
-  printf("\n");
+  printf("%-50s %s\n", "Signals queued/Signals limit: ", monitor->signals.signals);
   print_hex_signals("Signals Pending Thread: ", monitor->signals.pending_thread);
   print_hex_signals("Signals Pending Process: ", monitor->signals.pending_process);
   print_hex_signals("Signals Blocked: ", monitor->signals.blocked);

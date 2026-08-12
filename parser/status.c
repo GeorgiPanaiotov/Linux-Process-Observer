@@ -159,6 +159,55 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
       }
       skip_to_next_line(&cursor);
     }
+    else if (match_key(&cursor, "VmPeak"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        long vmpeak = atol(token);
+        sample_update(&mem_stats->peak, vmpeak);
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "VmSwap"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        long vmswap = atol(token);
+        sample_update(&mem_stats->swap, vmswap);
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "VmSize"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        long vmsize = atol(token);
+        sample_update(&mem_stats->vsize, vmsize);
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "RssShmem"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        long rssshmem = atol(token);
+        sample_update(&mem_stats->shared, rssshmem);
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "SigQ"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        sig_stats->signals = token;
+      }
+      skip_to_next_line(&cursor);
+    }
     else
     {
       skip_to_next_line(&cursor);

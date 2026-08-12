@@ -30,8 +30,7 @@ typedef struct CPUStats
 
 typedef struct SignalStats
 {
-  long queued;
-  long limit;
+  char *signals;
   uint64_t pending_thread;
   uint64_t pending_process;
   uint64_t blocked;
