@@ -24,3 +24,19 @@ Config config_create()
 
   return conf;
 }
+
+void p_sleep(Config *config)
+{
+  int ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &config->slp, &config->rem);
+  while (ret == EINTR)
+  {
+    config->slp = config->rem;
+    ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &config->slp, &config->rem);
+  }
+
+  if (ret != 0)
+  {
+    perror("start_run: clock_nanosleep");
+    exit(EXIT_FAILURE);
+  }
+}

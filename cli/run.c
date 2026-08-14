@@ -39,18 +39,7 @@ void start_run(const char *program_name, char **c_argv)
     print_status(&monitor);
 
     prev = curr;
-    int ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &config.slp, &config.rem);
-    while (ret == EINTR)
-    {
-      config.slp = config.rem;
-      ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &config.slp, &config.rem);
-    }
-
-    if (ret != 0)
-    {
-      perror("start_run: clock_nanosleep");
-      exit(EXIT_FAILURE);
-    }
+    p_sleep(&config);
   }
 
   monitor_wait_process(&monitor.process);
