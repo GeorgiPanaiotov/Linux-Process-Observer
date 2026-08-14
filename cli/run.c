@@ -19,11 +19,6 @@ void start_run(const char *program_name, char **c_argv)
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
-  struct timespec slp = {
-      .tv_sec = 0,
-      .tv_nsec = 50 * 1000 * 1000};
-  struct timespec rem;
-
   while (monitor.process.running)
   {
     // CLEARS ENTIRE SCREEN
@@ -39,17 +34,16 @@ void start_run(const char *program_name, char **c_argv)
     printf("%-50s %.3f %%\n", "CPU: ", (cpu_percent / (float)config.n_processors));
 
     print_memory(&monitor, &config, rss_buf, peak_buf, swap_buf, shared_buf, vsize_buf, sizeof(rss_buf), sizeof(peak_buf), sizeof(swap_buf), sizeof(shared_buf), sizeof(vsize_buf));
-
     print_stats(&monitor);
     print_io(&monitor);
     print_status(&monitor);
 
     prev = curr;
-    int ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &slp, &rem);
+    int ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &config.slp, &config.rem);
     while (ret == EINTR)
     {
-      slp = rem;
-      ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &slp, &rem);
+      config.slp = config.rem;
+      ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &config.slp, &config.rem);
     }
 
     if (ret != 0)
@@ -65,15 +59,15 @@ void start_run(const char *program_name, char **c_argv)
 
 void print_memory(Monitor *monitor, Config *config, char *rss_buf, char *peak_buf, char *swap_buf, char *shared_buf, char *vsize_buf, size_t rss_size, size_t peak_size, size_t swap_size, size_t shared_size, size_t vsize_size)
 {
-  format_bytes(rss_buf, rss_size, (monitor->memory.rss.current * config->page_size));
+  format_bytes(rss_buf, rss_size, (monitor->memory.rss * config->page_size));
   printf("%-50s %s\n", "RSS: ", rss_buf);
-  format_bytes(peak_buf, peak_size, (monitor->memory.peak.current * 1024));
+  format_bytes(peak_buf, peak_size, (monitor->memory.peak * 1024));
   printf("%-50s %s\n", "VM Peak: ", peak_buf);
-  format_bytes(swap_buf, swap_size, (monitor->memory.swap.current * 1024));
+  format_bytes(swap_buf, swap_size, (monitor->memory.swap * 1024));
   printf("%-50s %s\n", "VM Swap: ", swap_buf);
-  format_bytes(shared_buf, shared_size, (monitor->memory.shared.current * 1024));
+  format_bytes(shared_buf, shared_size, (monitor->memory.shared * 1024));
   printf("%-50s %s\n", "VM Shared: ", shared_buf);
-  format_bytes(vsize_buf, vsize_size, (monitor->memory.vsize.current * 1024));
+  format_bytes(vsize_buf, vsize_size, (monitor->memory.vsize * 1024));
   printf("%-50s %s\n", "VM Size: ", vsize_buf);
 }
 
@@ -93,19 +87,27 @@ void print_stats(Monitor *monitor)
 void print_io(Monitor *monitor)
 {
   printf("%-50s %'lld\n", "File Descriptor slots currently allocated: ", monitor->io.fd_size);
-  printf("%-50s %'lld\n", "Successfull Bytes from Read: ", monitor->io.rchar.current);
-  printf("%-50s %'lld\n", "Successfull Bytes from Write: ", monitor->io.wchar.current);
-  printf("%-50s %'lld\n", "Number of 'File Read' Syscalls: ", monitor->io.syscr.current);
-  printf("%-50s %'lld\n", "Number of 'File Write' Syscalls: ", monitor->io.syscw.current);
-  printf("%-50s %'lld\n", "Number of Bytes really fetched from Storage: ", monitor->io.read_bytes.current);
-  printf("%-50s %'lld\n", "Number of Bytes really sent to Storage: ", monitor->io.write_bytes.current);
-  printf("%-50s %'lld\n", "Cancelled Write Bytes: ", monitor->io.canceled_write_bytes.current);
+  printf("%-50s %'lld\n", "Successfull Bytes from Read: ", monitor->io.rchar);
+  printf("%-50s %'lld\n", "Successfull Bytes from Write: ", monitor->io.wchar);
+  printf("%-50s %'lld\n", "Number of 'File Read' Syscalls: ", monitor->io.syscr);
+  printf("%-50s %'lld\n", "Number of 'File Write' Syscalls: ", monitor->io.syscw);
+  printf("%-50s %'lld\n", "Number of Bytes really fetched from Storage: ", monitor->io.read_bytes);
+  printf("%-50s %'lld\n", "Number of Bytes really sent to Storage: ", monitor->io.write_bytes);
+  printf("%-50s %'lld\n", "Cancelled Write Bytes: ", monitor->io.canceled_write_bytes);
   printf("\n");
 }
 
 void print_status(Monitor *monitor)
 {
   print_status_signals(monitor);
+  print_cpu_switches(monitor);
+}
+
+void print_cpu_switches(Monitor *monitor)
+{
+  printf("%-50s %ld\n", "Voluntary Context Switches: ", monitor->cpu.v_ctx_switches);
+  printf("%-50s %ld\n", "Non-Voluntary Context Switches: ", monitor->cpu.nv_ctx_switches);
+  printf("\n");
 }
 
 void print_status_signals(Monitor *monitor)

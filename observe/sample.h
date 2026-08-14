@@ -10,12 +10,6 @@ typedef struct Sample
   long current;
 } Sample;
 
-typedef struct SampleLL
-{
-  long long previous;
-  long long current;
-} SampleLL;
-
 typedef struct CPUStats
 {
   Sample user_time;
@@ -26,6 +20,8 @@ typedef struct CPUStats
   long nice;
   char *state;
   long n_threads;
+  long v_ctx_switches;
+  long nv_ctx_switches;
 } CPUStats;
 
 typedef struct SignalStats
@@ -40,32 +36,30 @@ typedef struct SignalStats
 
 typedef struct MemoryStats
 {
-  Sample rss;
-  Sample peak;
-  Sample shared;
-  Sample swap;
-  Sample vsize;
+  long rss;
+  long peak;
+  long shared;
+  long swap;
+  long vsize;
 } MemoryStats;
 
 typedef struct IOStats
 {
-  SampleLL read_bytes;
-  SampleLL write_bytes;
-  SampleLL syscr;
-  SampleLL syscw;
-  SampleLL canceled_write_bytes;
-  SampleLL rchar;
-  SampleLL wchar;
+  long long read_bytes;
+  long long write_bytes;
+  long long syscr;
+  long long syscw;
+  long long canceled_write_bytes;
+  long long rchar;
+  long long wchar;
   long long fd_size;
 } IOStats;
 
 Sample sample_create();
-SampleLL samplell_create();
 MemoryStats memory_stats_create();
 CPUStats cpu_stats_create();
 IOStats io_stats_create();
 SignalStats signal_stats_create();
 void sample_update(Sample *sample, long value);
-void samplell_update(SampleLL *sample, long long value);
 
 #endif

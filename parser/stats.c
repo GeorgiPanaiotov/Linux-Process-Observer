@@ -16,7 +16,7 @@ void parse_stats(MemoryStats *mem_stats, CPUStats *cpu_stats, char *buffer)
     {
     case STAT_RSS:
       long rss = atol(token);
-      sample_update(&mem_stats->rss, rss);
+      mem_stats->rss = rss;
       break;
     case STAT_UTIME:
       long u_time = atol(token);

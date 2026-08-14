@@ -9,23 +9,14 @@ Sample sample_create()
   return sample;
 }
 
-SampleLL samplell_create()
-{
-  SampleLL sample;
-  sample.current = 0;
-  sample.previous = 0;
-
-  return sample;
-}
-
 MemoryStats memory_stats_create()
 {
   MemoryStats ms;
-  Sample new_sample = sample_create();
-  ms.peak = new_sample;
-  ms.rss = new_sample;
-  ms.shared = new_sample;
-  ms.swap = new_sample;
+  ms.peak = 0;
+  ms.rss = 0;
+  ms.shared = 0;
+  ms.swap = 0;
+  ms.vsize = 0;
 
   return ms;
 }
@@ -42,6 +33,8 @@ CPUStats cpu_stats_create()
   cs.state = NULL;
   cs.system_time = new_sample;
   cs.user_time = new_sample;
+  cs.nv_ctx_switches = 0;
+  cs.v_ctx_switches = 0;
 
   return cs;
 }
@@ -50,32 +43,31 @@ SignalStats signal_stats_create()
 {
   SignalStats ss;
   ss.blocked = 0;
+  ss.caught = 0;
+  ss.ignored = 0;
+  ss.pending_process = 0;
+  ss.pending_thread = 0;
+  ss.signals = NULL;
+
   return ss;
 }
 
 IOStats io_stats_create()
 {
   IOStats is;
-  SampleLL new_sample = samplell_create();
-  is.canceled_write_bytes = new_sample;
-  is.rchar = new_sample;
-  is.read_bytes = new_sample;
-  is.syscr = new_sample;
-  is.syscw = new_sample;
-  is.wchar = new_sample;
-  is.write_bytes = new_sample;
+  is.canceled_write_bytes = 0;
+  is.rchar = 0;
+  is.read_bytes = 0;
+  is.syscr = 0;
+  is.syscw = 0;
+  is.wchar = 0;
+  is.write_bytes = 0;
   is.fd_size = 0;
 
   return is;
 }
 
 void sample_update(Sample *sample, long value)
-{
-  sample->previous = sample->current;
-  sample->current = value;
-}
-
-void samplell_update(SampleLL *sample, long long value)
 {
   sample->previous = sample->current;
   sample->current = value;

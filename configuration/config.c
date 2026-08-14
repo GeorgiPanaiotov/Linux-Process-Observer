@@ -14,5 +14,13 @@ Config config_create()
 
   setlocale(LC_NUMERIC, "en_US.UTF-8");
 
+  struct timespec slp = {
+      .tv_sec = 0,
+      .tv_nsec = 50 * 1000 * 1000};
+  struct timespec rem = {0};
+
+  conf.slp = slp;
+  conf.rem = rem;
+
   return conf;
 }

@@ -165,7 +165,7 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
       if (token)
       {
         long vmpeak = atol(token);
-        sample_update(&mem_stats->peak, vmpeak);
+        mem_stats->peak = vmpeak;
       }
       skip_to_next_line(&cursor);
     }
@@ -175,7 +175,7 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
       if (token)
       {
         long vmswap = atol(token);
-        sample_update(&mem_stats->swap, vmswap);
+        mem_stats->swap = vmswap;
       }
       skip_to_next_line(&cursor);
     }
@@ -185,7 +185,7 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
       if (token)
       {
         long vmsize = atol(token);
-        sample_update(&mem_stats->vsize, vmsize);
+        mem_stats->vsize = vmsize;
       }
       skip_to_next_line(&cursor);
     }
@@ -195,7 +195,7 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
       if (token)
       {
         long rssshmem = atol(token);
-        sample_update(&mem_stats->shared, rssshmem);
+        mem_stats->shared = rssshmem;
       }
       skip_to_next_line(&cursor);
     }
@@ -215,6 +215,26 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
       {
         long long fdsize = atoll(token);
         io_stats->fd_size = fdsize;
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "voluntary_ctxt_switches"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        long vctxs = atol(token);
+        cpu_stats->v_ctx_switches = vctxs;
+      }
+      skip_to_next_line(&cursor);
+    }
+    else if (match_key(&cursor, "nonvoluntary_ctxt_switches"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        long nvctxs = atol(token);
+        cpu_stats->nv_ctx_switches = nvctxs;
       }
       skip_to_next_line(&cursor);
     }
