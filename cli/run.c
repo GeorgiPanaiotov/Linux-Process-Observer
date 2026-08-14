@@ -19,6 +19,11 @@ void start_run(const char *program_name, char **c_argv)
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
+  struct timespec slp = {
+      .tv_sec = 0,
+      .tv_nsec = 50 * 1000 * 1000};
+  struct timespec rem;
+
   while (monitor.process.running)
   {
     // CLEARS ENTIRE SCREEN
@@ -40,7 +45,18 @@ void start_run(const char *program_name, char **c_argv)
     print_status(&monitor);
 
     prev = curr;
-    sleep(1);
+    int ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &slp, &rem);
+    while (ret == EINTR)
+    {
+      slp = rem;
+      ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &slp, &rem);
+    }
+
+    if (ret != 0)
+    {
+      perror("start_run: clock_nanosleep");
+      exit(EXIT_FAILURE);
+    }
   }
 
   monitor_wait_process(&monitor.process);
@@ -76,6 +92,7 @@ void print_stats(Monitor *monitor)
 
 void print_io(Monitor *monitor)
 {
+  printf("%-50s %'lld\n", "File Descriptor slots currently allocated: ", monitor->io.fd_size);
   printf("%-50s %'lld\n", "Successfull Bytes from Read: ", monitor->io.rchar.current);
   printf("%-50s %'lld\n", "Successfull Bytes from Write: ", monitor->io.wchar.current);
   printf("%-50s %'lld\n", "Number of 'File Read' Syscalls: ", monitor->io.syscr.current);

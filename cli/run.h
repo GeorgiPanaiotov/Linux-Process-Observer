@@ -2,6 +2,7 @@
 #define RUN_H
 
 #include <time.h>
+#include <errno.h>
 
 #include "observe.h"
 #include "config.h"

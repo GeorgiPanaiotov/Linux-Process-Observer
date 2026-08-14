@@ -208,6 +208,16 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
       }
       skip_to_next_line(&cursor);
     }
+    else if (match_key(&cursor, "FDSize"))
+    {
+      char *token = next_status_value(&cursor);
+      if (token)
+      {
+        long long fdsize = atoll(token);
+        io_stats->fd_size = fdsize;
+      }
+      skip_to_next_line(&cursor);
+    }
     else
     {
       skip_to_next_line(&cursor);
