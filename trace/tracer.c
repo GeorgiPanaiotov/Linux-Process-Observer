@@ -25,7 +25,8 @@ void tracer_create(pid_t pid)
   char str[32];
   snprintf(str, sizeof(str), "%d\n", pid);
   write_tracefs("/sys/kernel/tracing/current_tracer", "function_graph", O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/options/event-fork", "1", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/options/function-fork", "1", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/options/event-fork", "1", O_WRONLY | O_TRUNC);
   // write_tracefs("/sys/kernel/tracing/set_ftrace_pid", str, O_WRONLY | O_TRUNC);
   // write_tracefs("/sys/kernel/tracing/set_event_pid", str, O_WRONLY | O_TRUNC);
   // write_tracefs("/sys/kernel/tracing/events/syscalls/enable", "1", O_WRONLY | O_TRUNC);

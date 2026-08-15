@@ -4,8 +4,11 @@ static const char *suffixes[] = {"B", "KB", "MB", "GB", "TB", "PB"};
 
 void start_run(const char *program_name, char **c_argv)
 {
+
+  tracer_create(1);
   Monitor monitor = monitor_create(program_name, c_argv);
   Config config = config_create();
+  // Logger logger = logger_create(".");
 
   char rss_buf[32];
   char peak_buf[32];
@@ -19,7 +22,7 @@ void start_run(const char *program_name, char **c_argv)
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
-  tracer_create(monitor.process.process_pid);
+  // logger_file_create(&logger);
 
   while (monitor.process.running)
   {
@@ -28,6 +31,7 @@ void start_run(const char *program_name, char **c_argv)
 
     // REDRAWS THE SCREEN
     // printf("\033[H");
+    read_tracer();
     monitor_loop(&monitor);
 
     clock_gettime(CLOCK_MONOTONIC, &curr);
@@ -35,7 +39,6 @@ void start_run(const char *program_name, char **c_argv)
     float cpu_percent = get_cpu_percent(elapsed, &monitor.cpu.user_time, &monitor.cpu.system_time, config.hz);
     printf("%-50s %.3f %%\n", "CPU: ", (cpu_percent / (float)config.n_processors));
 
-    read_tracer();
     // printf("%d\n", monitor.process.process_pid);
 
     print_memory(&monitor, &config, rss_buf, peak_buf, swap_buf, shared_buf, vsize_buf, sizeof(rss_buf), sizeof(peak_buf), sizeof(swap_buf), sizeof(shared_buf), sizeof(vsize_buf));
@@ -113,12 +116,6 @@ void print_status_signals(Monitor *monitor)
   print_hex_signals("Signals Blocked: ", monitor->signals.blocked);
   print_hex_signals("Signals Ignored: ", monitor->signals.ignored);
   print_hex_signals("Signals Caught: ", monitor->signals.caught);
-  printf("\n");
-}
-
-void print_tracer(char *buffer)
-{
-  printf("%s\n", buffer);
   printf("\n");
 }
 

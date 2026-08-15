@@ -18,6 +18,6 @@ typedef struct Config
 } Config;
 
 Config config_create();
-void p_sleep();
+void p_sleep(Config *config);
 
 #endif
