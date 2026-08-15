@@ -1,0 +1,84 @@
+#include "tracer.h"
+
+void write_tracefs(const char *path, const char *value, int flags)
+{
+  int fd = open(path, flags);
+  if (fd == -1)
+  {
+    perror("write_tracefs: open");
+    exit(EXIT_FAILURE);
+  }
+
+  ssize_t bw = write(fd, value, strlen(value));
+  if (bw == -1)
+  {
+    perror("write_tracefs: write");
+    close(fd);
+    exit(EXIT_FAILURE);
+  }
+
+  close(fd);
+}
+
+void tracer_create(pid_t pid)
+{
+  char str[32];
+  snprintf(str, sizeof(str), "%d\n", pid);
+  write_tracefs("/sys/kernel/tracing/current_tracer", "function_graph", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/options/event-fork", "1", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/set_ftrace_pid", str, O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/set_event_pid", str, O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/events/syscalls/enable", "1", O_WRONLY | O_TRUNC);
+
+  write_tracefs("/sys/kernel/tracing/tracing_on", "1", O_WRONLY | O_TRUNC);
+}
+
+void tracer_cleanup()
+{
+  write_tracefs("/sys/kernel/tracing/set_ftrace_pid", "\n", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/set_event_pid", "\n", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/options/event-fork", "0", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/current_tracer", "nop", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/events/syscalls/enable", "0", O_WRONLY | O_TRUNC);
+
+  write_tracefs("/sys/kernel/tracing/tracing_on", "0", O_WRONLY | O_TRUNC);
+}
+
+int tracer_open_pipe()
+{
+  int trace_fd = open("/sys/kernel/tracing/trace_pipe", O_RDONLY | O_NONBLOCK);
+  if (trace_fd == -1)
+  {
+    perror("tracer_open_pipe: open");
+    tracer_cleanup();
+    exit(EXIT_FAILURE);
+  }
+
+  return trace_fd;
+}
+
+void read_tracer()
+{
+  write_tracefs("/sys/kernel/tracing/tracing_on", "0", O_WRONLY | O_TRUNC);
+  int tracer_fd = tracer_open_pipe();
+  char buffer[8192];
+  buffer[8191] = '\0';
+  ssize_t read_buffer = read(tracer_fd, buffer, 8192);
+
+  if (read_buffer == -1)
+  {
+    printf("ERRNO: %d\n", errno);
+    if (errno != EAGAIN && errno != EWOULDBLOCK)
+    {
+      perror("read_tracer: read");
+      tracer_cleanup();
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  buffer[read_buffer] = '\0';
+  printf("%s\n", buffer);
+
+  close(tracer_fd);
+  write_tracefs("/sys/kernel/tracing/tracing_on", "1", O_WRONLY | O_TRUNC);
+}
