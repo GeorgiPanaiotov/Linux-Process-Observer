@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <sys/wait.h>
 
+#include "tracer.h"
+
 typedef struct Process {
   pid_t process_pid;
   pid_t parent_pid;

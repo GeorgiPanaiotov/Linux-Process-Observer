@@ -1,20 +1,11 @@
 #include "run.h"
 
-static const char *suffixes[] = {"B", "KB", "MB", "GB", "TB", "PB"};
-
 void start_run(const char *program_name, char **c_argv)
 {
-
-  tracer_create(1);
   Monitor monitor = monitor_create(program_name, c_argv);
+  tracer_create(monitor.process.process_pid);
   Config config = config_create();
-  // Logger logger = logger_create(".");
-
-  char rss_buf[32];
-  char peak_buf[32];
-  char swap_buf[32];
-  char shared_buf[32];
-  char vsize_buf[32];
+  Logger logger = logger_create(".");
 
   struct timespec prev;
   struct timespec curr;
@@ -22,7 +13,9 @@ void start_run(const char *program_name, char **c_argv)
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
-  // logger_file_create(&logger);
+  monitor.logs.tracer_buffer[BUFFER_8KB_SIZE] = '\0';
+
+  logger_file_create(&logger);
 
   while (monitor.process.running)
   {
@@ -31,26 +24,30 @@ void start_run(const char *program_name, char **c_argv)
 
     // REDRAWS THE SCREEN
     // printf("\033[H");
-    read_tracer();
+    read_tracer(monitor.logs.tracer_buffer, monitor.logs.tracer_buffer_size);
     monitor_loop(&monitor);
 
     clock_gettime(CLOCK_MONOTONIC, &curr);
     float elapsed = (curr.tv_sec - prev.tv_sec) + (curr.tv_nsec - prev.tv_nsec) / 1e9;
     float cpu_percent = get_cpu_percent(elapsed, &monitor.cpu.user_time, &monitor.cpu.system_time, config.hz);
-    printf("%-50s %.3f %%\n", "CPU: ", (cpu_percent / (float)config.n_processors));
 
-    // printf("%d\n", monitor.process.process_pid);
+    logger_log_data(&monitor, &config, &logger, cpu_percent);
 
-    print_memory(&monitor, &config, rss_buf, peak_buf, swap_buf, shared_buf, vsize_buf, sizeof(rss_buf), sizeof(peak_buf), sizeof(swap_buf), sizeof(shared_buf), sizeof(vsize_buf));
-    print_stats(&monitor);
-    print_io(&monitor);
-    print_status(&monitor);
+    // print_memory(&monitor, &config, rss_buf, peak_buf, swap_buf, shared_buf, vsize_buf, sizeof(rss_buf), sizeof(peak_buf), sizeof(swap_buf), sizeof(shared_buf), sizeof(vsize_buf));
+    // print_stats(&monitor);
+    // print_io(&monitor);
+    // print_status(&monitor);
 
     prev = curr;
     p_sleep(&config);
   }
 
   tracer_cleanup();
+
+  exhaust_pipe(monitor.logs.tracer_buffer, monitor.logs.tracer_buffer_size);
+  logger_log_data(&monitor, &config, &logger, 0);
+
+  logger_cleanup(&logger);
   monitor_wait_process(&monitor.process);
   monitor_cleanup(&monitor);
 }
@@ -117,25 +114,4 @@ void print_status_signals(Monitor *monitor)
   print_hex_signals("Signals Ignored: ", monitor->signals.ignored);
   print_hex_signals("Signals Caught: ", monitor->signals.caught);
   printf("\n");
-}
-
-void format_bytes(char *buf, size_t buf_size, long bytes)
-{
-  int i = 0;
-  double d_bytes = (double)bytes;
-
-  while (d_bytes >= 1024 && i < 5)
-  {
-    d_bytes /= 1024;
-    i++;
-  }
-
-  if (i == 0)
-  {
-    snprintf(buf, buf_size, "%'ld %s", bytes, suffixes[i]);
-  }
-  else
-  {
-    snprintf(buf, buf_size, "%'.3f %s", d_bytes, suffixes[i]);
-  }
 }

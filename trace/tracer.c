@@ -24,25 +24,26 @@ void tracer_create(pid_t pid)
 {
   char str[32];
   snprintf(str, sizeof(str), "%d\n", pid);
-  write_tracefs("/sys/kernel/tracing/current_tracer", "function_graph", O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/options/function-fork", "1", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/current_tracer", "nop", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/trace", "\n", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/options/function-fork", "1", O_WRONLY | O_TRUNC);
   // write_tracefs("/sys/kernel/tracing/options/event-fork", "1", O_WRONLY | O_TRUNC);
-  // write_tracefs("/sys/kernel/tracing/set_ftrace_pid", str, O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/set_ftrace_pid", str, O_WRONLY | O_TRUNC);
   // write_tracefs("/sys/kernel/tracing/set_event_pid", str, O_WRONLY | O_TRUNC);
-  // write_tracefs("/sys/kernel/tracing/events/syscalls/enable", "1", O_WRONLY | O_TRUNC);
+  write_tracefs("/sys/kernel/tracing/events/syscalls/enable", "1", O_WRONLY | O_TRUNC);
 
   write_tracefs("/sys/kernel/tracing/tracing_on", "1", O_WRONLY | O_TRUNC);
 }
 
 void tracer_cleanup()
 {
+  write_tracefs("/sys/kernel/tracing/tracing_on", "0", O_WRONLY | O_TRUNC);
+
   write_tracefs("/sys/kernel/tracing/set_ftrace_pid", "\n", O_WRONLY | O_TRUNC);
   write_tracefs("/sys/kernel/tracing/set_event_pid", "\n", O_WRONLY | O_TRUNC);
   write_tracefs("/sys/kernel/tracing/options/event-fork", "0", O_WRONLY | O_TRUNC);
   write_tracefs("/sys/kernel/tracing/current_tracer", "nop", O_WRONLY | O_TRUNC);
   write_tracefs("/sys/kernel/tracing/events/syscalls/enable", "0", O_WRONLY | O_TRUNC);
-
-  write_tracefs("/sys/kernel/tracing/tracing_on", "0", O_WRONLY | O_TRUNC);
 }
 
 int tracer_open_pipe()
@@ -58,17 +59,24 @@ int tracer_open_pipe()
   return trace_fd;
 }
 
-void read_tracer()
+void read_tracer(char *buffer, size_t buffer_size)
 {
-  write_tracefs("/sys/kernel/tracing/tracing_on", "0", O_WRONLY | O_TRUNC);
   int tracer_fd = tracer_open_pipe();
-  char buffer[8192];
-  buffer[8191] = '\0';
-  ssize_t read_buffer = read(tracer_fd, buffer, 8192);
+  ssize_t read_buffer;
+  ssize_t read_buffer_total = 0;
+
+  while (read_buffer_total < (ssize_t)buffer_size)
+  {
+    read_buffer = read(tracer_fd, buffer + read_buffer_total, READ_CHUNK_SIZE - read_buffer_total);
+    if (read_buffer <= 0)
+    {
+      break;
+    }
+    read_buffer_total += read_buffer;
+  }
 
   if (read_buffer == -1)
   {
-    printf("ERRNO: %d\n", errno);
     if (errno != EAGAIN && errno != EWOULDBLOCK)
     {
       perror("read_tracer: read");
@@ -77,9 +85,38 @@ void read_tracer()
     }
   }
 
-  buffer[read_buffer] = '\0';
-  printf("%s\n", buffer);
+  buffer[read_buffer_total] = '\0';
 
   close(tracer_fd);
-  write_tracefs("/sys/kernel/tracing/tracing_on", "1", O_WRONLY | O_TRUNC);
+}
+
+void exhaust_pipe(char *buffer, size_t buffer_size)
+{
+  ssize_t n;
+  int tracer_fd = tracer_open_pipe();
+
+  for (;;)
+  {
+    n = read(tracer_fd, buffer, buffer_size - 1);
+
+    if (n > 0)
+    {
+      buffer[n] = '\0';
+      continue;
+    }
+
+    if (n == -1 && errno == EAGAIN)
+    {
+      break;
+    }
+
+    if (n == 0)
+    {
+      break;
+    }
+
+    perror("exhaust_pipe: read");
+    break;
+  }
+  close(tracer_fd);
 }

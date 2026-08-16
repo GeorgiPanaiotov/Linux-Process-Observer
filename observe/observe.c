@@ -11,6 +11,7 @@ Monitor monitor_create(const char *p_name, char **argv)
   monitor.stat_buffer = buffer_create();
   monitor.status_buffer = buffer_create();
   monitor.io_buffer = buffer_create();
+  monitor.logs = create_logs();
 
   monitor_start_process(&monitor.process);
 
@@ -52,7 +53,7 @@ void load_and_read_process_data(Monitor *mon, Buffer *buf, int fd)
   buf->size = 0;
   lseek(fd, 0, SEEK_SET);
 
-  while ((read_buffer = read(fd, buf->data + buf->size, READ_BUFFER_SIZE)) > 0)
+  while ((read_buffer = read(fd, buf->data + buf->size, BUFFER_8KB_SIZE)) > 0)
   {
     if (read_buffer == -1)
     {
@@ -61,7 +62,7 @@ void load_and_read_process_data(Monitor *mon, Buffer *buf, int fd)
       exit(EXIT_FAILURE);
     }
     buf->size += read_buffer;
-    if (buf->size + READ_BUFFER_SIZE >= buf->capacity)
+    if (buf->size + BUFFER_8KB_SIZE >= buf->capacity)
     {
       buffer_grow(buf);
     }
@@ -107,7 +108,7 @@ void monitor_loop(Monitor *monitor)
 Buffer buffer_create()
 {
   Buffer buf;
-  buf.capacity = BUFFER_CAPACITY;
+  buf.capacity = BUFFER_8KB_SIZE;
   buf.size = 0;
   buf.data = malloc(buf.capacity + 1);
 
@@ -140,4 +141,19 @@ void buffer_grow(Buffer *buf)
 
   buf->data = temp_buf;
   buf->data[buf->capacity] = '\0';
+}
+
+Logs create_logs()
+{
+  Logs logs;
+
+  logs.peak_buf_size = sizeof(logs.peak_buf);
+  logs.rss_buf_size = sizeof(logs.rss_buf);
+  logs.share_buf_size = sizeof(logs.shared_buf);
+  logs.swap_buf_size = sizeof(logs.swap_buf);
+  logs.vsize_buf_size = sizeof(logs.vsize_buf);
+  logs.tracer_buffer_size = sizeof(logs.tracer_buffer);
+  logs.timestamp_size = sizeof(logs.timestamp);
+
+  return logs;
 }
