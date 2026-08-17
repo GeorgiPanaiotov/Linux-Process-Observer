@@ -3,13 +3,13 @@
 void start_run(const char *program_name, char **c_argv)
 {
   Monitor monitor = monitor_create(program_name, c_argv);
-  tracer_create(monitor.process.process_pid);
   Config config = config_create();
   Logger logger = logger_create(".");
 
   struct timespec prev;
   struct timespec curr;
 
+  read_tracer(monitor.logs.tracer_buffer, monitor.logs.tracer_buffer_size);
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
