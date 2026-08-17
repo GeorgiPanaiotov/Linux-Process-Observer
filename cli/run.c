@@ -9,7 +9,7 @@ void start_run(const char *program_name, char **c_argv)
   struct timespec prev;
   struct timespec curr;
 
-  read_tracer(monitor.logs.tracer_buffer, monitor.logs.tracer_buffer_size);
+  read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
@@ -19,12 +19,9 @@ void start_run(const char *program_name, char **c_argv)
 
   while (monitor.process.running)
   {
-    // CLEARS ENTIRE SCREEN
-    // printf("\033[2J\033[H");
-
-    // REDRAWS THE SCREEN
-    // printf("\033[H");
-    read_tracer(monitor.logs.tracer_buffer, monitor.logs.tracer_buffer_size);
+    fd_buffer_reset(&monitor.fd_buffer);
+    read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
+    read_fd_contents(&monitor.proc_files.fddir_fd, monitor.process.process_pid, &monitor.fd_buffer);
     monitor_loop(&monitor);
 
     clock_gettime(CLOCK_MONOTONIC, &curr);
@@ -33,18 +30,13 @@ void start_run(const char *program_name, char **c_argv)
 
     logger_log_data(&monitor, &config, &logger, cpu_percent);
 
-    // print_memory(&monitor, &config, rss_buf, peak_buf, swap_buf, shared_buf, vsize_buf, sizeof(rss_buf), sizeof(peak_buf), sizeof(swap_buf), sizeof(shared_buf), sizeof(vsize_buf));
-    // print_stats(&monitor);
-    // print_io(&monitor);
-    // print_status(&monitor);
-
     prev = curr;
     p_sleep(&config);
   }
 
   tracer_cleanup();
 
-  exhaust_pipe(monitor.logs.tracer_buffer, monitor.logs.tracer_buffer_size);
+  exhaust_pipe(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
   logger_log_data(&monitor, &config, &logger, 0);
 
   logger_cleanup(&logger);
@@ -94,7 +86,6 @@ void print_io(Monitor *monitor)
 
 void print_status(Monitor *monitor)
 {
-  print_status_signals(monitor);
   print_cpu_switches(monitor);
 }
 
@@ -102,16 +93,5 @@ void print_cpu_switches(Monitor *monitor)
 {
   printf("%-50s %ld\n", "Voluntary Context Switches: ", monitor->cpu.v_ctx_switches);
   printf("%-50s %ld\n", "Non-Voluntary Context Switches: ", monitor->cpu.nv_ctx_switches);
-  printf("\n");
-}
-
-void print_status_signals(Monitor *monitor)
-{
-  printf("%-50s %s\n", "Signals queued/Signals limit: ", monitor->signals.signals);
-  print_hex_signals("Signals Pending Thread: ", monitor->signals.pending_thread);
-  print_hex_signals("Signals Pending Process: ", monitor->signals.pending_process);
-  print_hex_signals("Signals Blocked: ", monitor->signals.blocked);
-  print_hex_signals("Signals Ignored: ", monitor->signals.ignored);
-  print_hex_signals("Signals Caught: ", monitor->signals.caught);
   printf("\n");
 }

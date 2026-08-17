@@ -56,13 +56,16 @@ ProcHandles get_proc_files(pid_t pid)
   char stat_path[PATH_MAX];
   char status_path[PATH_MAX];
   char io_path[PATH_MAX];
+  char fd_path[PATH_MAX];
   snprintf(stat_path, sizeof(stat_path), "/proc/%d/stat", pid);
   snprintf(status_path, sizeof(status_path), "/proc/%d/status", pid);
   snprintf(io_path, sizeof(io_path), "/proc/%d/io", pid);
+  snprintf(fd_path, sizeof(fd_path), "/proc/%d/fd/", pid);
 
   p_files.io_fd = open_file(io_path);
   p_files.stat_fd = open_file(stat_path);
   p_files.status_fd = open_file(status_path);
+  p_files.fddir_fd = open_file(fd_path);
 
   return p_files;
 }
@@ -73,4 +76,5 @@ void close_proc_files(ProcHandles *p_files)
   close(p_files->smaps_fd);
   close(p_files->stat_fd);
   close(p_files->status_fd);
+  close(p_files->fddir_fd);
 }

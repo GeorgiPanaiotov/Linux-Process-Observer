@@ -68,13 +68,19 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
 
   get_formatted_timestamp(monitor->logs.timestamp, sizeof(monitor->logs.timestamp));
 
-  format_bytes(monitor->logs.rss_buf, monitor->logs.rss_buf_size, monitor->memory.rss * config->page_size);
-  format_bytes(monitor->logs.peak_buf, monitor->logs.peak_buf_size, monitor->memory.peak * 1024);
-  format_bytes(monitor->logs.swap_buf, monitor->logs.swap_buf_size, monitor->memory.swap * 1024);
-  format_bytes(monitor->logs.shared_buf, monitor->logs.share_buf_size, monitor->memory.shared * 1024);
-  format_bytes(monitor->logs.vsize_buf, monitor->logs.vsize_buf_size, monitor->memory.vsize * 1024);
+  format_bytes(monitor->logs.rss_buf, sizeof(monitor->logs.rss_buf), monitor->memory.rss * config->page_size);
+  format_bytes(monitor->logs.peak_buf, sizeof(monitor->logs.peak_buf), monitor->memory.peak * 1024);
+  format_bytes(monitor->logs.swap_buf, sizeof(monitor->logs.swap_buf), monitor->memory.swap * 1024);
+  format_bytes(monitor->logs.shared_buf, sizeof(monitor->logs.shared_buf), monitor->memory.shared * 1024);
+  format_bytes(monitor->logs.vsize_buf, sizeof(monitor->logs.vsize_buf), monitor->memory.vsize * 1024);
 
-  char header[2048];
+  format_signal_list(monitor->logs.blocked_sig_buf, sizeof(monitor->logs.blocked_sig_buf), monitor->signals.blocked);
+  format_signal_list(monitor->logs.ignored_sig_buf, sizeof(monitor->logs.ignored_sig_buf), monitor->signals.ignored);
+  format_signal_list(monitor->logs.caught_sig_buf, sizeof(monitor->logs.caught_sig_buf), monitor->signals.caught);
+  format_signal_list(monitor->logs.pending_p_sig_buf, sizeof(monitor->logs.pending_p_sig_buf), monitor->signals.pending_process);
+  format_signal_list(monitor->logs.pending_t_sig_buf, sizeof(monitor->logs.pending_t_sig_buf), monitor->signals.pending_thread);
+
+  char header[8192];
   int header_len = snprintf(header, sizeof(header),
                             "[%s]\n"
                             "%-50s %.3f %%\n"
@@ -99,14 +105,15 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
                             "%-50s %'lld\n"
                             "%-50s %'lld\n"
                             "%-50s %'lld\n"
-                            "%-50s %ld\n"
-                            "%-50s %ld\n"
                             "%-50s %s\n"
                             "%-50s %ld\n"
                             "%-50s %ld\n"
-                            "%-50s %ld\n"
-                            "%-50s %ld\n"
-                            "%-50s %ld\n"
+                            "%-50s %s\n"
+                            "%-50s %s\n"
+                            "%-50s %s\n"
+                            "%-50s %s\n"
+                            "%-50s %s\n"
+                            "%-50s %s\n"
                             "--- TRACER BUFFER ---\n",
                             monitor->logs.timestamp,
                             "CPU: ", (cpu_percent / (float)config->n_processors),
@@ -131,14 +138,15 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
                             "Number of Bytes really fetched from Storage: ", monitor->io.read_bytes,
                             "Number of Bytes really sent to Storage: ", monitor->io.write_bytes,
                             "Cancelled Write Bytes: ", monitor->io.canceled_write_bytes,
+                            "Files currently open: ", monitor->fd_buffer.data,
                             "Voluntary Context Switches: ", monitor->cpu.v_ctx_switches,
                             "Non-Voluntary Context Switches: ", monitor->cpu.nv_ctx_switches,
                             "Signals queued/Signals limit: ", monitor->signals.signals,
-                            "Signals Pending Thread: ", monitor->signals.pending_thread,
-                            "Signals Pending Process: ", monitor->signals.pending_process,
-                            "Signals Blocked: ", monitor->signals.blocked,
-                            "Signals Ignored: ", monitor->signals.ignored,
-                            "Signals Caught: ", monitor->signals.caught);
+                            "Signals Pending Thread: ", monitor->logs.pending_t_sig_buf,
+                            "Signals Pending Process: ", monitor->logs.pending_p_sig_buf,
+                            "Signals Blocked: ", monitor->logs.blocked_sig_buf,
+                            "Signals Ignored: ", monitor->logs.ignored_sig_buf,
+                            "Signals Caught: ", monitor->logs.caught_sig_buf);
 
   struct iovec iov[3];
   iov[0].iov_base = header;
@@ -197,5 +205,35 @@ void format_bytes(char *buf, size_t buf_size, long bytes)
   else
   {
     snprintf(buf, buf_size, "%'.3f %s", d_bytes, suffixes[i]);
+  }
+}
+
+void format_signal_list(char *buf, size_t buf_size, uint64_t mask)
+{
+  if (mask == 0)
+  {
+    snprintf(buf, buf_size, "0");
+    return;
+  }
+
+  size_t pos = 0;
+  int count = 0;
+
+  for (int signo = 1; signo <= 64; signo++)
+  {
+    if (mask & (1ULL << (signo - 1)))
+    {
+      const char *name = strsignal(signo);
+
+      int written = snprintf(buf + pos, buf_size - pos, "%s%s", (count > 0) ? ", " : "", name ? name : "Unknown");
+
+      if (written < 0 || (size_t)written >= buf_size - pos)
+      {
+        break;
+      }
+
+      pos += written;
+      count++;
+    }
   }
 }

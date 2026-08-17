@@ -16,6 +16,7 @@ typedef struct ProcHandles {
   int status_fd;
   int io_fd;
   int smaps_fd;
+  int fddir_fd;
 } ProcHandles;
 
 DIR *get_proc();

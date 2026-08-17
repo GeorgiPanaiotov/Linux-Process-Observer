@@ -1,43 +1,5 @@
 #include "status.h"
 
-void format_signal_list(char *buf, size_t buf_size, uint64_t mask)
-{
-  if (mask == 0)
-  {
-    snprintf(buf, buf_size, "0");
-    return;
-  }
-
-  size_t pos = 0;
-  int count = 0;
-
-  for (int signo = 1; signo <= 64; signo++)
-  {
-    if (mask & (1ULL << (signo - 1)))
-    {
-      const char *name = strsignal(signo);
-
-      int written = snprintf(buf + pos, buf_size - pos, "%s%s", (count > 0) ? ", " : "", name ? name : "Unknown");
-
-      if (written < 0 || (size_t)written >= buf_size - pos)
-      {
-        break;
-      }
-
-      pos += written;
-      count++;
-    }
-  }
-}
-
-void print_hex_signals(const char *field_name, uint64_t mask)
-{
-  char sig_buf[512];
-  format_signal_list(sig_buf, sizeof(sig_buf), mask);
-
-  printf("%-50s %s\n", field_name, sig_buf);
-}
-
 bool match_key(char **cursor, const char *key)
 {
   char *c = *cursor;

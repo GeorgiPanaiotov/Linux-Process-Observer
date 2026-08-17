@@ -5,6 +5,7 @@
 #include "stats.h"
 #include "io.h"
 #include "status.h"
+#include "fd.h"
 
 #define BUFFER_8KB_SIZE 8192
 
@@ -18,19 +19,17 @@ typedef struct Buffer
 typedef struct Logs
 {
   char rss_buf[32];
-  size_t rss_buf_size;
   char peak_buf[32];
-  size_t peak_buf_size;
   char swap_buf[32];
-  size_t swap_buf_size;
   char shared_buf[32];
-  size_t share_buf_size;
   char vsize_buf[32];
-  size_t vsize_buf_size;
   char tracer_buffer[BUFFER_8KB_SIZE + 1];
-  size_t tracer_buffer_size;
   char timestamp[32];
-  size_t timestamp_size;
+  char caught_sig_buf[512];
+  char blocked_sig_buf[512];
+  char pending_t_sig_buf[512];
+  char pending_p_sig_buf[512];
+  char ignored_sig_buf[512];
 } Logs;
 
 typedef struct Monitor
@@ -47,6 +46,7 @@ typedef struct Monitor
   Buffer stat_buffer;
   Buffer status_buffer;
   Buffer io_buffer;
+  FDBuffer fd_buffer;
 
   Logs logs;
 } Monitor;
@@ -64,6 +64,5 @@ void buffer_grow(Buffer *buf);
 void load_and_read_process_data(Monitor *mon, Buffer *buf, int fd);
 
 float get_cpu_percent(float delta_time, Sample *user_time, Sample *system_time, long hz);
-Logs create_logs();
 
 #endif

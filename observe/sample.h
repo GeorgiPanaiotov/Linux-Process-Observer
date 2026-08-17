@@ -55,6 +55,11 @@ typedef struct IOStats
   long long fd_size;
 } IOStats;
 
+typedef struct FDStats
+{
+  
+} FDStats;
+
 Sample sample_create();
 MemoryStats memory_stats_create();
 CPUStats cpu_stats_create();

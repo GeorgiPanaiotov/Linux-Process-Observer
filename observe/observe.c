@@ -8,10 +8,11 @@ Monitor monitor_create(const char *p_name, char **argv)
   monitor.cpu = cpu_stats_create();
   monitor.io = io_stats_create();
   monitor.signals = signal_stats_create();
+
   monitor.stat_buffer = buffer_create();
   monitor.status_buffer = buffer_create();
   monitor.io_buffer = buffer_create();
-  monitor.logs = create_logs();
+  monitor.fd_buffer = fdbuffer_create();
 
   monitor_start_process(&monitor.process);
 
@@ -45,6 +46,8 @@ void monitor_cleanup(Monitor *monitor)
   buffer_cleanup(&monitor->stat_buffer);
   buffer_cleanup(&monitor->status_buffer);
   buffer_cleanup(&monitor->io_buffer);
+
+  fdbuffer_cleanup(&monitor->fd_buffer);
 }
 
 void load_and_read_process_data(Monitor *mon, Buffer *buf, int fd)
@@ -141,19 +144,4 @@ void buffer_grow(Buffer *buf)
 
   buf->data = temp_buf;
   buf->data[buf->capacity] = '\0';
-}
-
-Logs create_logs()
-{
-  Logs logs;
-
-  logs.peak_buf_size = sizeof(logs.peak_buf);
-  logs.rss_buf_size = sizeof(logs.rss_buf);
-  logs.share_buf_size = sizeof(logs.shared_buf);
-  logs.swap_buf_size = sizeof(logs.swap_buf);
-  logs.vsize_buf_size = sizeof(logs.vsize_buf);
-  logs.tracer_buffer_size = sizeof(logs.tracer_buffer);
-  logs.timestamp_size = sizeof(logs.timestamp);
-
-  return logs;
 }

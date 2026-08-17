@@ -15,7 +15,5 @@ void parse_status(MemoryStats *mem_stats, CPUStats *cpu_stats, IOStats *io_stats
 bool match_key(char **cursor, const char *key);
 void skip_to_next_line(char **cursor);
 char *next_status_value(char **cursor);
-void format_signal_list(char *buf, size_t buf_size, uint64_t mask);
-void print_hex_signals(const char *field_name, uint64_t mask);
 
 #endif

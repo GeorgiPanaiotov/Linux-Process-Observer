@@ -27,5 +27,6 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
 void logger_cleanup(Logger *logger);
 void get_formatted_timestamp(char *buf, size_t len);
 void format_bytes(char *buf, size_t buf_size, long bytes);
+void format_signal_list(char *buf, size_t buf_size, uint64_t mask);
 
 #endif
