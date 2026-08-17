@@ -101,7 +101,12 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
                             "%-50s %'lld\n"
                             "%-50s %ld\n"
                             "%-50s %ld\n"
-                            "%-50s %s\n\n"
+                            "%-50s %s\n"
+                            "%-50s %ld\n"
+                            "%-50s %ld\n"
+                            "%-50s %ld\n"
+                            "%-50s %ld\n"
+                            "%-50s %ld\n"
                             "--- TRACER BUFFER ---\n",
                             monitor->logs.timestamp,
                             "CPU: ", (cpu_percent / (float)config->n_processors),
@@ -128,7 +133,12 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
                             "Cancelled Write Bytes: ", monitor->io.canceled_write_bytes,
                             "Voluntary Context Switches: ", monitor->cpu.v_ctx_switches,
                             "Non-Voluntary Context Switches: ", monitor->cpu.nv_ctx_switches,
-                            "Signals queued/Signals limit: ", monitor->signals.signals);
+                            "Signals queued/Signals limit: ", monitor->signals.signals,
+                            "Signals Pending Thread: ", monitor->signals.pending_thread,
+                            "Signals Pending Process: ", monitor->signals.pending_process,
+                            "Signals Blocked: ", monitor->signals.blocked,
+                            "Signals Ignored: ", monitor->signals.ignored,
+                            "Signals Caught: ", monitor->signals.caught);
 
   struct iovec iov[3];
   iov[0].iov_base = header;
