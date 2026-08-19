@@ -8,6 +8,7 @@
 #include "fd.h"
 
 #define BUFFER_8KB_SIZE 8192
+#define BUFFER_32KB_SIZE (32 * 1024)
 
 typedef struct Buffer
 {
@@ -23,7 +24,7 @@ typedef struct Logs
   char swap_buf[32];
   char shared_buf[32];
   char vsize_buf[32];
-  char tracer_buffer[BUFFER_8KB_SIZE + 1];
+  char tracer_buffer[BUFFER_32KB_SIZE + 1];
   char timestamp[32];
   char caught_sig_buf[512];
   char blocked_sig_buf[512];
