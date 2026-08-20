@@ -13,10 +13,10 @@ LOGGER = logger/logger.c
 SOURCES = $(MAIN) $(CLI) $(PROCESS) $(OBSERVE) $(PARSER) $(CONFIG) $(TRACER) $(LOGGER)
 
 build:
-	$(CC) -o why $(CFLAGS) $(SOURCES)
+	$(CC) -o lbx $(CFLAGS) $(SOURCES)
 
 dbg:
-	$(CC) -o why $(CFLAGS) -g $(SOURCES)
+	$(CC) -o lbx $(CFLAGS) -g $(SOURCES)
 
 clean:
-	rm ./why
+	rm ./lbx

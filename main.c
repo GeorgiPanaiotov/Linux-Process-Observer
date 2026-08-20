@@ -4,7 +4,8 @@ extern char **environ;
 
 void print_help()
 {
-  printf("Usage: why [...args]\n\n");
+  printf("Linux Black Box observer\n");
+  printf("Usage: lbx [...args]\n\n");
   printf("%-50s %s\n", "--help", "Help");
   printf("%-50s %s\n", "--run <program_name>", "Run <program_name>");
   printf("%-50s %s\n", "--watch <program_name>", "Watch <program_name>");

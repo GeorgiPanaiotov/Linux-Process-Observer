@@ -14,11 +14,11 @@ Logger logger_create(const char *path)
   if (local != NULL)
   {
     strftime(time_str, sizeof(time_str), "%Y_%m_%d_%H_%M", local);
-    snprintf(logger.file_name, sizeof(logger.file_name), "%swhy.log", time_str);
+    snprintf(logger.file_name, sizeof(logger.file_name), "%slbx.log", time_str);
   }
   else
   {
-    snprintf(logger.file_name, sizeof(logger.file_name), "whydefault.log");
+    snprintf(logger.file_name, sizeof(logger.file_name), "lbxdefault.log");
   }
 
   return logger;
