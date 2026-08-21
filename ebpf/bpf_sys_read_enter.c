@@ -1,6 +1,6 @@
 struct trace_event_sys_enter_read {
   unsigned short common_type;
-  unsigned short common_flags;
+  unsigned char common_flags;
   unsigned char common_preempt_count;
   int common_pid;
 

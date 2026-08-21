@@ -37,6 +37,7 @@ int load_program_event(int event_id)
 
   pe_attr.type = PERF_TYPE_TRACEPOINT;
   pe_attr.config = event_id;
+  pe_attr.size = sizeof(struct perf_event_attr);
   pe_attr.sample_type = PERF_SAMPLE_RAW;
   pe_attr.sample_period = 1;
   pe_attr.wakeup_events = 1;
