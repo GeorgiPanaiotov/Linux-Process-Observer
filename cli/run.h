@@ -11,6 +11,7 @@
 #include "tracer.h"
 #include "logger.h"
 #include "fd.h"
+#include "loader.h"
 
 void start_run(const char *program_name, char **c_argv);
 void print_stats(Monitor *monitor);

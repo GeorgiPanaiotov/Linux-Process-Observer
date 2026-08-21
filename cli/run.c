@@ -17,6 +17,22 @@ void start_run(const char *program_name, char **c_argv)
 
   logger_file_create(&logger);
 
+  int ers_prog_fd = load_ebpf_program("./ebpf/bpf_sys_read_enter.bin");
+  if (ers_prog_fd == -1)
+  {
+    perror("start_run: load_ebpf_program");
+    exit(EXIT_FAILURE);
+  }
+
+  int ers_event_fd = load_program_event(747);
+  if (ers_event_fd == -1)
+  {
+    perror("start_run: load_program_event");
+    exit(EXIT_FAILURE);
+  }
+
+  attach_event_program(&ers_prog_fd, &ers_event_fd);
+
   while (monitor.process.running)
   {
     fd_buffer_reset(&monitor.fd_buffer);

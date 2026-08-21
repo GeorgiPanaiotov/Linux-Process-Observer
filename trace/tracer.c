@@ -22,28 +22,28 @@ void write_tracefs(const char *path, const char *value, int flags)
 
 void tracer_create(pid_t pid)
 {
-  char str[32];
-  snprintf(str, sizeof(str), "%d\n", pid);
-  write_tracefs("/sys/kernel/tracing/current_tracer", "nop", O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/trace", "\n", O_WRONLY | O_TRUNC);
-  // write_tracefs("/sys/kernel/tracing/options/function-fork", "1", O_WRONLY | O_TRUNC);
-  // write_tracefs("/sys/kernel/tracing/options/event-fork", "1", O_WRONLY | O_TRUNC);
-  // write_tracefs("/sys/kernel/tracing/set_ftrace_pid", str, O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/set_event_pid", str, O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/events/syscalls/sys_enter_read/enable", "1", O_WRONLY | O_TRUNC);
+  // char str[32];
+  // snprintf(str, sizeof(str), "%d\n", pid);
+  // write_tracefs("/sys/kernel/tracing/current_tracer", "nop", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/trace", "\n", O_WRONLY | O_TRUNC);
+  // // write_tracefs("/sys/kernel/tracing/options/function-fork", "1", O_WRONLY | O_TRUNC);
+  // // write_tracefs("/sys/kernel/tracing/options/event-fork", "1", O_WRONLY | O_TRUNC);
+  // // write_tracefs("/sys/kernel/tracing/set_ftrace_pid", str, O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/set_event_pid", str, O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/events/syscalls/sys_enter_read/enable", "1", O_WRONLY | O_TRUNC);
 
-  write_tracefs("/sys/kernel/tracing/tracing_on", "1", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/tracing_on", "1", O_WRONLY | O_TRUNC);
 }
 
 void tracer_cleanup()
 {
-  write_tracefs("/sys/kernel/tracing/tracing_on", "0", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/tracing_on", "0", O_WRONLY | O_TRUNC);
 
-  write_tracefs("/sys/kernel/tracing/set_ftrace_pid", "\n", O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/current_tracer", "nop", O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/events/syscalls/sys_enter_read/enable", "0", O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/set_event_pid", "\n", O_WRONLY | O_TRUNC);
-  write_tracefs("/sys/kernel/tracing/options/event-fork", "0", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/set_ftrace_pid", "\n", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/current_tracer", "nop", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/events/syscalls/sys_enter_read/enable", "0", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/set_event_pid", "\n", O_WRONLY | O_TRUNC);
+  // write_tracefs("/sys/kernel/tracing/options/event-fork", "0", O_WRONLY | O_TRUNC);
 }
 
 int tracer_open_pipe()
