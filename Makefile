@@ -13,7 +13,11 @@ LOADER = loader/loader.c
 
 SOURCES = $(MAIN) $(CLI) $(PROCESS) $(OBSERVE) $(PARSER) $(CONFIG) $(TRACER) $(LOGGER) $(LOADER)
 
-build:
+compile_bpfs:
+	clang -O2 -target bpf -c ebpf/bpf_sys_read_enter.c -o ebpf/bpf_sys_read_enter.o
+	llvm-objcopy-21 -O binary --only-section=tracepoint/syscalls/sys_enter_read ebpf/bpf_sys_read_enter.o ebpf/bpf_sys_read_enter.bin
+
+build: compile_bpfs
 	$(CC) -o lbx $(CFLAGS) $(SOURCES)
 
 dbg:
