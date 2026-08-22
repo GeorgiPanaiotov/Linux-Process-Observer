@@ -24,7 +24,7 @@ void start_run(const char *program_name, char **c_argv)
     exit(EXIT_FAILURE);
   }
 
-  int ers_event_fd = load_program_event(747);
+  int ers_event_fd = load_program_event(&ers_prog_fd, 747);
   if (ers_event_fd == -1)
   {
     perror("start_run: load_program_event");

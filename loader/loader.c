@@ -30,26 +30,45 @@ int load_ebpf_program(const char *path)
   return program_fd;
 }
 
-int load_program_event(int event_id)
+// int load_program_event(int event_id)
+// {
+//   struct perf_event_attr pe_attr;
+//   memset(&pe_attr, 0, sizeof(pe_attr));
+
+//   pe_attr.type = PERF_TYPE_TRACEPOINT;
+//   pe_attr.config = event_id;
+//   pe_attr.size = sizeof(struct perf_event_attr);
+//   pe_attr.sample_type = PERF_SAMPLE_RAW;
+//   pe_attr.sample_period = 1;
+//   pe_attr.wakeup_events = 1;
+
+//   int event_fd = syscall(__NR_perf_event_open, &pe_attr, -1, 0, -1, 0);
+//   if (event_fd == -1)
+//   {
+//     perror("load_program_event: syscall");
+//     return -1;
+//   }
+
+//   return event_fd;
+// }
+
+int load_program_event(int *program_fd, int tracepoint_id)
 {
-  struct perf_event_attr pe_attr;
-  memset(&pe_attr, 0, sizeof(pe_attr));
+  union bpf_attr attr;
+  memset(&attr, 0, sizeof(attr));
 
-  pe_attr.type = PERF_TYPE_TRACEPOINT;
-  pe_attr.config = event_id;
-  pe_attr.size = sizeof(struct perf_event_attr);
-  pe_attr.sample_type = PERF_SAMPLE_RAW;
-  pe_attr.sample_period = 1;
-  pe_attr.wakeup_events = 1;
+  attr.link_create.prog_fd = *program_fd;
+  attr.link_create.target_fd = tracepoint_id;
+  attr.link_create.attach_type = 1;
 
-  int event_fd = syscall(__NR_perf_event_open, &pe_attr, -1, 0, -1, 0);
-  if (event_fd == -1)
+  int link_fd = syscall(__NR_bpf, BPF_LINK_CREATE, &attr, sizeof(attr));
+  if (link_fd < 0)
   {
     perror("load_program_event: syscall");
     return -1;
   }
 
-  return event_fd;
+  return link_fd;
 }
 
 void attach_event_program(int *program_fd, int *event_fd)
