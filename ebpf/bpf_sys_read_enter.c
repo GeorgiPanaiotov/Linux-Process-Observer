@@ -12,7 +12,7 @@ struct trace_event_sys_enter_read {
   unsigned long count;
 };
 
-static long (*bpf_trace_printk)(const char *fmt, unsigned int fmt_size, ...) = (void *)14;
+static long (*bpf_trace_printk)(const char *fmt, unsigned int fmt_size, ...) = (void *)6;
 
 __attribute__((section("tracepoint/syscalls/sys_enter_read")))
 int handle_enter_read(struct trace_event_sys_enter_read *ctx)
