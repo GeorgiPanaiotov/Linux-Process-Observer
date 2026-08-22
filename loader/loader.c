@@ -52,7 +52,7 @@ int load_program_event(int event_id)
    return event_fd;
 }
 
-void attach_event_program(int *program_fd, int *event_fd)
+int attach_event_program(int *program_fd, int *event_fd)
 {
   union bpf_attr attr;
   memset(&attr, 0, sizeof(attr));
@@ -62,15 +62,13 @@ void attach_event_program(int *program_fd, int *event_fd)
   attr.link_create.prog_fd = *program_fd;
 
   int attached_fd = syscall(__NR_bpf, BPF_LINK_CREATE, &attr, sizeof(attr));
-  // if (ioctl(*event_fd, PERF_EVENT_IOC_SET_BPF, *program_fd) < 0)
-  // {
-    // perror("attach_event_program: ioctl");
-    // exit(EXIT_FAILURE);
-  // }
-
-  // if (ioctl(*event_fd, PERF_EVENT_IOC_ENABLE, 0) < 0)
-  // {
-    // perror("attach_event_program: ioctl");
-    // exit(EXIT_FAILURE);
-  // }
+  if (attached_fd == -1)
+  {
+    perror("attach_event_program: syscall");
+    close(*program_fd);
+    close(*event_fd);
+    return -1;
+  }
+  
+  return attached_fd;
 }
