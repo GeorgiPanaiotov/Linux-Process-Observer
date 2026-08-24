@@ -72,3 +72,23 @@ int attach_event_program(int *program_fd, int *event_fd)
   
   return attached_fd;
 }
+
+int create_program_map()
+{
+  union bpf_attr map_attr;
+  memset(&map_attr, 0, sizeof(map_attr));
+
+  map_attr.map_type = BPF_MAP_TYPE_HASH;
+  map_attr.key_size = sizeof(int);
+  map_attr.value_size = sizeof(long long);
+  map_attr.max_entries = 1024;
+
+  int map_fd = syscall(__NR_bpf, BPF_MAP_CREATE, &map_attr, sizeof(map_attr));
+  if (map_fd == -1)
+  {
+    perror("create_program_map: syscall");
+    return -1;
+  }
+
+  return map_fd;
+}

@@ -16,5 +16,6 @@
 int load_ebpf_program(const char *path);
 int load_program_event(int event_id);
 int attach_event_program(int *program_fd, int *event_fd);
+int create_program_map();
 
 #endif
