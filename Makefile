@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Icli -Iobserve -Iprocess -Iparser -Iconfiguration -Itrace -Ilogger -Iloader
+CFLAGS = -Wall -Wextra -Icli -Iobserve -Iprocess -Iparser -Iconfiguration -Itrace -Ilogger -Iloader -Ielf
 
 MAIN = main.c
 CLI = cli/run.c cli/watch.c
@@ -10,8 +10,9 @@ CONFIG = configuration/config.c
 TRACER = trace/tracer.c
 LOGGER = logger/logger.c
 LOADER = loader/loader.c
+ELFPARSER = elf/elf_parser.c
 
-SOURCES = $(MAIN) $(CLI) $(PROCESS) $(OBSERVE) $(PARSER) $(CONFIG) $(TRACER) $(LOGGER) $(LOADER)
+SOURCES = $(MAIN) $(CLI) $(PROCESS) $(OBSERVE) $(PARSER) $(CONFIG) $(TRACER) $(LOGGER) $(LOADER) $(ELFPARSER)
 
 compile_bpfs:
 	clang -O2 -target bpf -c ebpf/bpf_sys_read_enter.c -o ebpf/bpf_sys_read_enter.o
