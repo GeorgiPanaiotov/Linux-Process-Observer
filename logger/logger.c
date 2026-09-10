@@ -113,8 +113,7 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
                             "%-50s %s\n"
                             "%-50s %s\n"
                             "%-50s %s\n"
-                            "%-50s %s\n"
-                            "--- TRACER BUFFER ---\n",
+                            "%-50s %s\n",
                             monitor->logs.timestamp,
                             "CPU: ", (cpu_percent / (float)config->n_processors),
                             "RSS: ", monitor->logs.rss_buf,
@@ -148,17 +147,17 @@ void logger_log_data(Monitor *monitor, Config *config, Logger *logger, float cpu
                             "Signals Ignored: ", monitor->logs.ignored_sig_buf,
                             "Signals Caught: ", monitor->logs.caught_sig_buf);
 
-  struct iovec iov[3];
+  struct iovec iov[2];
   iov[0].iov_base = header;
   iov[0].iov_len = header_len;
 
-  iov[1].iov_base = monitor->logs.tracer_buffer;
-  iov[1].iov_len = strlen(monitor->logs.tracer_buffer);
+  // iov[1].iov_base = monitor->logs.tracer_buffer;
+  // iov[1].iov_len = strlen(monitor->logs.tracer_buffer);
 
-  iov[2].iov_base = "\n========================================\n\n";
-  iov[2].iov_len = 43;
+  iov[1].iov_base = "\n========================================\n\n";
+  iov[1].iov_len = 43;
 
-  writev(logger->log_file_fd, iov, 3);
+  writev(logger->log_file_fd, iov, 2);
 }
 
 void logger_cleanup(Logger *logger)

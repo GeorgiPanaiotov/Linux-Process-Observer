@@ -24,7 +24,7 @@ pid_t process_spawn(Process *process)
   }
   if (c_pid == 0)
   {
-    tracer_create(c_pid);
+    // tracer_create(c_pid);
     int p_status = execvp(process->p_name, process->argv);
 
     if (p_status == -1)

@@ -9,34 +9,34 @@ void start_run(const char *program_name, char **c_argv)
   struct timespec prev;
   struct timespec curr;
 
-  read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
+  // read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
-  monitor.logs.tracer_buffer[BUFFER_8KB_SIZE] = '\0';
+  // monitor.logs.tracer_buffer[BUFFER_8KB_SIZE] = '\0';
 
   logger_file_create(&logger);
 
-  int ers_prog_fd = load_ebpf_program("./ebpf/bpf_sys_read_enter.bin");
-  if (ers_prog_fd == -1)
-  {
-    perror("start_run: load_ebpf_program");
-    exit(EXIT_FAILURE);
-  }
+  // int ers_prog_fd = load_ebpf_program("./ebpf/bpf_sys_read_enter.bin");
+  // if (ers_prog_fd == -1)
+  // {
+    // perror("start_run: load_ebpf_program");
+    // exit(EXIT_FAILURE);
+  // }
 
-  int ers_event_fd = load_program_event(807);
-  if (ers_event_fd == -1)
-  {
-    perror("start_run: load_program_event");
-    exit(EXIT_FAILURE);
-  }
+  // int ers_event_fd = load_program_event(807);
+  // if (ers_event_fd == -1)
+  // {
+    // perror("start_run: load_program_event");
+    // exit(EXIT_FAILURE);
+  // }
 
-  attach_event_program(&ers_prog_fd, &ers_event_fd);
+  // attach_event_program(&ers_prog_fd, &ers_event_fd);
 
   while (monitor.process.running)
   {
     fd_buffer_reset(&monitor.fd_buffer);
-    read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
+    // read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
     read_fd_contents(&monitor.proc_files.fddir_fd, monitor.process.process_pid, &monitor.fd_buffer);
     monitor_loop(&monitor);
 
@@ -50,9 +50,9 @@ void start_run(const char *program_name, char **c_argv)
     p_sleep(&config);
   }
 
-  tracer_cleanup();
+  // tracer_cleanup();
 
-  exhaust_pipe(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
+  // exhaust_pipe(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
   logger_log_data(&monitor, &config, &logger, 0);
 
   logger_cleanup(&logger);
