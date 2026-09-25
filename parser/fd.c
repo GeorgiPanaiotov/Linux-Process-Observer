@@ -41,21 +41,17 @@ void read_fd_contents(int *fd, pid_t pid, FDBuffer *buf)
       {
 	file_path[len] = '\0';
 
-	if (!strstr(file_path, "/dev/pts/"))
-       	{
-	
-          if (buf->offset < FDBUFFER_SIZE)
+        if (buf->offset < FDBUFFER_SIZE)
+        {
+          size_t remaining = FDBUFFER_SIZE - buf->offset;
+
+          int written = snprintf(buf->data + buf->offset, remaining, "%s - fd: %s\n", file_path, dir_ent->d_name);
+
+          if (written > 0 && (size_t)written < remaining)
           {
-            size_t remaining = FDBUFFER_SIZE - buf->offset;
-
-            int written = snprintf(buf->data + buf->offset, remaining, "%s - fd: %s\n", file_path, dir_ent->d_name);
-
-            if (written > 0 && (size_t)written < remaining)
-            {
-              buf->offset += written;
-            }
+            buf->offset += written;
           }
-	}
+        }
       }
       else
       {

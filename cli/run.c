@@ -9,11 +9,11 @@ void start_run(const char *program_name, char **c_argv)
   struct timespec prev;
   struct timespec curr;
 
-  // read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
+  read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
   clock_gettime(CLOCK_MONOTONIC, &curr);
   prev = curr;
 
-  // monitor.logs.tracer_buffer[BUFFER_8KB_SIZE] = '\0';
+  monitor.logs.tracer_buffer[BUFFER_8KB_SIZE] = '\0';
 
   logger_file_create(&logger);
 
@@ -36,7 +36,7 @@ void start_run(const char *program_name, char **c_argv)
   while (monitor.process.running)
   {
     fd_buffer_reset(&monitor.fd_buffer);
-    // read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
+    read_tracer(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
     read_fd_contents(&monitor.proc_files.fddir_fd, monitor.process.process_pid, &monitor.fd_buffer);
     monitor_loop(&monitor);
 
@@ -50,9 +50,9 @@ void start_run(const char *program_name, char **c_argv)
     p_sleep(&config);
   }
 
-  // tracer_cleanup();
+  tracer_cleanup();
 
-  // exhaust_pipe(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
+  exhaust_pipe(monitor.logs.tracer_buffer, sizeof(monitor.logs.tracer_buffer));
   logger_log_data(&monitor, &config, &logger, 0);
 
   logger_cleanup(&logger);
