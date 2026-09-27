@@ -43,16 +43,24 @@ typedef struct Monitor
   SignalStats signals;
 
   ProcHandles proc_files;
+  CgroupHandles cgroup_files;
 
   Buffer stat_buffer;
   Buffer status_buffer;
   Buffer io_buffer;
   FDBuffer fd_buffer;
 
+  Buffer cpu_stat_buffer;
+  Buffer mem_stat_buffer;
+  Buffer mem_cur_buffer;
+  Buffer io_stat_buffer;
+  Buffer proc_stat_buffer;
+
   Logs logs;
 } Monitor;
 
-Monitor monitor_create(const char *p_name, char **argv);
+Monitor monitor_create_per_process(const char *p_name, char **argv);
+Monitor monitor_create_cgroup_process(const char *p_name, char **argv);
 void monitor_start_process(Process *process);
 void monitor_wait_process(Process *process);
 void monitor_cleanup(Monitor *monitor);

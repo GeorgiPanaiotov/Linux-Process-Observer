@@ -1,8 +1,9 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Icli -Iobserve -Iprocess -Iparser -Iconfiguration -Itrace -Ilogger -Iloader -Ielf
+CFLAGS = -Wall -Wextra -Icli -Iobserve -Iprocess -Iparser -Iconfiguration -Itrace -Ilogger -Iloader -Ielf -Icgroups
 
 MAIN = main.c
-CLI = cli/run.c cli/watch.c
+CLI = cli/run_process.c cli/watch.c cli/run.c
+CGROUPS = cgroups/cgroups.c
 PROCESS = process/enumerate.c process/process.c
 OBSERVE = observe/observe.c observe/sample.c
 PARSER = parser/stats.c parser/io.c parser/status.c parser/net_dev.c parser/fd.c
@@ -12,7 +13,7 @@ LOGGER = logger/logger.c
 LOADER = loader/loader.c
 ELFPARSER = elf/elf_parser.c
 
-SOURCES = $(MAIN) $(CLI) $(PROCESS) $(OBSERVE) $(PARSER) $(CONFIG) $(TRACER) $(LOGGER) $(LOADER) $(ELFPARSER)
+SOURCES = $(MAIN) $(CLI) $(PROCESS) $(OBSERVE) $(PARSER) $(CONFIG) $(TRACER) $(LOGGER) $(LOADER) $(ELFPARSER) $(CGROUPS)
 
 compile_bpfs:
 	clang -O2 -target bpf -c ebpf/bpf_sys_read_enter.c -o ebpf/bpf_sys_read_enter.o

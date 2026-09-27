@@ -78,3 +78,25 @@ void close_proc_files(ProcHandles *p_files)
   close(p_files->status_fd);
   close(p_files->fddir_fd);
 }
+
+CgroupHandles get_cgroup_proc_files()
+{
+  CgroupHandles cgrp_files = {0};
+
+  cgrp_files.procs_fd = open_file("/sys/fs/cgroup/lbx/cgroup.procs");
+  cgrp_files.cpu_stat_fd = open_file("/sys/fs/cgroup/lbx/cpu.stat");
+  cgrp_files.mem_current_fd = open_file("/sys/fs/cgroup/lbx/memory.current");
+  cgrp_files.mem_stat_fd = open_file("/sys/fs/cgroup/lbx/memory.stat");
+  cgrp_files.io_stat_fd = open_file("/sys/fs/cgroup/lbx/io.stat");
+
+  return cgrp_files;
+}
+
+void close_cgroup_proc_files(CgroupHandles *cgrp_files)
+{
+  close(cgrp_files->procs_fd);
+  close(cgrp_files->cpu_stat_fd);
+  close(cgrp_files->mem_stat_fd);
+  close(cgrp_files->mem_current_fd);
+  close(cgrp_files->io_stat_fd);
+}

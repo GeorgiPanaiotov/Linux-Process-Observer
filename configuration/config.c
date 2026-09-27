@@ -36,7 +36,7 @@ void p_sleep(Config *config)
 
   if (ret != 0)
   {
-    perror("start_run: clock_nanosleep");
+    perror("p_sleep: clock_nanosleep");
     exit(EXIT_FAILURE);
   }
 }

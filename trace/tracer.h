@@ -11,7 +11,7 @@
 
 #define READ_CHUNK_SIZE 8192
 
-void write_tracefs(const char *path, const char *value, int flags);
+void write_trace_settings(const char *path, const char *value, int flags);
 void tracer_create(pid_t pid);
 void tracer_cleanup();
 int tracer_open_pipe();

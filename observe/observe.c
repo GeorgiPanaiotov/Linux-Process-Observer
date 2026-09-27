@@ -1,6 +1,6 @@
 #include "observe.h"
 
-Monitor monitor_create(const char *p_name, char **argv)
+Monitor monitor_create_per_process(const char *p_name, char **argv)
 {
   Monitor monitor;
   monitor.process = process_create(p_name, argv);
@@ -17,6 +17,26 @@ Monitor monitor_create(const char *p_name, char **argv)
   monitor_start_process(&monitor.process);
 
   monitor.proc_files = get_proc_files(monitor.process.process_pid);
+
+  return monitor;
+}
+
+Monitor monitor_create_cgroup_process(const char *p_name, char **argv)
+{
+  Monitor monitor;
+  monitor.process = process_create(p_name, argv);
+  monitor.memory = memory_stats_create();
+  monitor.cpu = cpu_stats_create();
+  monitor.io = io_stats_create();
+  monitor.signals = signal_stats_create();
+
+  monitor.cpu_stat_buffer = buffer_create();
+  monitor.mem_stat_buffer = buffer_create();
+  monitor.mem_cur_buffer = buffer_create();
+  monitor.io_stat_buffer = buffer_create();
+  monitor.proc_stat_buffer = buffer_create();
+
+  monitor.cgroup_files = get_cgroup_proc_files();
 
   return monitor;
 }
